@@ -116,9 +116,22 @@ class PDFViewer:
         self.master.geometry('580x520+440+180')
         self.master.resizable(True, True)
         
-        # Zoom level initialization
+        # Add zoom level initialization
         self.zoom_level = 1.0  # Default zoom level
         self.zoom_step = 0.1   # Zoom increment/decrement step
+
+        # ... (keep the existing button creation code)
+
+        # Add zoom in and zoom out buttons
+        self.zoom_in_button = ttk.Button(self.bottom_frame, text="Zoom In", command=self.zoom_in)
+        self.zoom_in_button.grid(row=0, column=5, padx=5, pady=8)
+
+        self.zoom_out_button = ttk.Button(self.bottom_frame, text="Zoom Out", command=self.zoom_out)
+        self.zoom_out_button.grid(row=0, column=6, padx=5, pady=8)
+
+        # Add zoom level label
+        self.zoom_label = ttk.Label(self.bottom_frame, text="100%")
+        self.zoom_label.grid(row=0, column=7, padx=5)
         
         # Using PhotoImage to set the icon
         try:
@@ -219,23 +232,29 @@ class PDFViewer:
                 # replacing the window title with the PDF document name
                 self.master.title(self.name)
     
-    # the function to display the page  
+    def zoom_in(self):
+        if self.fileisopen:
+            self.zoom_level += self.zoom_step
+            self.update_zoom()
+
+    def zoom_out(self):
+        if self.fileisopen and self.zoom_level > self.zoom_step:
+            self.zoom_level -= self.zoom_step
+            self.update_zoom()
+
+    def update_zoom(self):
+        self.zoom_label['text'] = f"{int(self.zoom_level * 100)}%"
+        self.display_page()
+
     def display_page(self):
-        # checking if numPages is less than current_page and if current_page is less than
-        # or equal to 0
         if 0 <= self.current_page < self.numPages:
-            # getting the page using get_page() function from miner
-            self.img_file = self.miner.get_page(self.current_page)
-            # inserting the page image inside the Canvas
+            self.img_file = self.miner.get_page(self.current_page, zoom=self.zoom_level)
+            self.output.delete("all")  # Clear previous content
             self.output.create_image(0, 0, anchor='nw', image=self.img_file)
-            # the variable to be stringified
             self.stringified_current_page = self.current_page + 1
-            # updating the page label with number of pages 
-            self.page_label['text'] = str(self.stringified_current_page) + ' of ' + str(self.numPages)
-            # creating a region for inserting the page inside the Canvas
+            self.page_label['text'] = f"{self.stringified_current_page} of {self.numPages}"
             region = self.output.bbox(ALL)
-            # making the region to be scrollable
-            self.output.configure(scrollregion=region)         
+            self.output.configure(scrollregion=region)      
 
     # function for displaying next page
     def next_page(self):

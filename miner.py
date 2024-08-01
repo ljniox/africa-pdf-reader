@@ -33,9 +33,9 @@ class PDFMiner:
         numPages = self.pdf.page_count
         # returning the metadata and the numPages
         return metadata, numPages
-    
+    '''
     # the function for getting the page
-    def get_page(self, page_num):
+    def get_page(self, page_num, zoom=1.0):
         # loading the page
         page = self.pdf.load_page(page_num)
         # checking if zoom is True
@@ -53,8 +53,16 @@ class PDFMiner:
         imgdata = px1.tobytes("ppm")
         # returning the image data
         return PhotoImage(data=imgdata)
-    
-    
+        '''
+  
+    def get_page(self, page_num, zoom=1.0):
+        page = self.pdf.load_page(page_num)
+        mat = fitz.Matrix(zoom * self.zoom, zoom * self.zoom)
+        pix = page.get_pixmap(matrix=mat)
+        px1 = fitz.Pixmap(pix, 0) if pix.alpha else pix
+        imgdata = px1.tobytes("ppm")
+        return PhotoImage(data=imgdata)
+
     # function to get text from the current page
     def get_text(self, page_num):
         # loading the page
